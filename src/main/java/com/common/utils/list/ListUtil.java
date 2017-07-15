@@ -12,7 +12,7 @@ import org.apache.commons.lang3.StringUtils;
 /**
  * 对象的排序,排序字段必须包含get方法
  * 
- * @author 宋思鹏(hzsongsipeng@corp.netease.com) 2017/7/12
+ * @author kevin(ssp0xd7@gmail.com) 2017/7/12
  * @param <T>
  */
 public class ListUtil<T> {

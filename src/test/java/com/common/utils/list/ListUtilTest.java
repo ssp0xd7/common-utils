@@ -1,9 +1,3 @@
-/**
- * @(#)ListUtilTest.java, 2017/7/13.
- * <p/>
- * Copyright 2017 Netease, Inc. All rights reserved.
- * NETEASE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- */
 package com.common.utils.list;
 
 import java.util.ArrayList;
@@ -17,7 +11,7 @@ import com.common.utils.TestBase;
 /**
  * list util test
  *
- * @author 宋思鹏(hzsongsipeng@corp.netease.com) 2017/7/13
+ * @author kevin(ssp0xd7@gmail.com) 2017/7/13
  */
 public class ListUtilTest extends TestBase {
 

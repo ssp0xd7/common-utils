@@ -1,15 +1,9 @@
-/**
- * @(#)SortDirection.java, 2014-8-22.
- *
- * Copyright 2014 Netease, Inc. All rights reserved.
- * NETEASE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- */
 package com.common.utils.list;
 
 /**
  * 排序方式
  *
- * @author 宋思鹏(hzsongsipeng@corp.netease.com) 2017/7/12
+ * @author kevin(ssp0xd7@gmail.com) 2017/7/12
  */
 public enum SortDirection {
     /**

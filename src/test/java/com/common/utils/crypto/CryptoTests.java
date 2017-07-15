@@ -1,9 +1,3 @@
-/**
- * @(#)CryptoTests.java, 2017/7/12.
- * <p/>
- * Copyright 2017 Netease, Inc. All rights reserved.
- * NETEASE PROPRIETARY/CONFIDENTIAL. Use is subject to license terms.
- */
 package com.common.utils.crypto;
 
 import junit.framework.Assert;
@@ -14,7 +8,7 @@ import com.common.utils.TestBase;
 /**
  * cryptoTest
  *
- * @author 宋思鹏(hzsongsipeng@corp.netease.com) 2017/7/12
+ * @author kevin(ssp0xd7@gmail.com) 2017/7/12
  */
 public class CryptoTests extends TestBase{
 
