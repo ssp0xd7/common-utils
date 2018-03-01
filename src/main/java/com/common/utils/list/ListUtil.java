@@ -35,11 +35,30 @@ public class ListUtil<T> {
      * @param sortDirection
      */
     public static <T> void sort(List<T> list, final String field, final SortDirection sortDirection) {
+        list = trimToEmpty(list);
         Collections.sort(list, new Comparator<T>() {
+            private int typeCompare(Type returnType, Object o1, Object o2) {
+                if (Integer.TYPE.equals(returnType) || Integer.class.equals(returnType)) {
+                    return ((Integer) o1).compareTo((Integer) o2);
+                } else if (Long.TYPE.equals(returnType) || Long.class.equals(returnType)) {
+                    return ((Long) o1).compareTo((Long) o2);
+                } else if (Float.TYPE.equals(returnType) || Float.class.equals(returnType)) {
+                    return ((Float) o1).compareTo((Float) o2);
+                } else if (Double.TYPE.equals(returnType) || Double.class.equals(returnType)) {
+                    return ((Double) o1).compareTo((Double) o2);
+                } else if (Boolean.TYPE.equals(returnType) || Boolean.class.equals(returnType)) {
+                    return ((Boolean) o1).compareTo((Boolean) o2);
+                } else if (BigDecimal.class.equals(returnType)) {
+                    return ((BigDecimal) o1).compareTo((BigDecimal) o2);
+                } else {
+                    return o1.toString().compareTo(o2.toString());
+                }
+            }
+
             public int compare(T o1, T o2) {
                 int ret = 0;
                 String getMethod = parGetName(field);
-                Class<Object>[] params = new Class[0];
+                Class[] params = new Class[0];
                 Object[] param = new Object[0];
                 try {
                     Method m1 = o1.getClass().getMethod(getMethod, params);
@@ -51,56 +70,20 @@ public class ListUtil<T> {
                     Object m1Result = m1.invoke(o1, param);
                     Object m2Result = m1.invoke(o2, param);
 
-                    if (sortDirection == SortDirection.ASC) {
-                        if (m1Result == null && m2Result == null) {
-                            return 0;
-                        } else if (m1Result == null) {
-                            return -1;
-                        } else if (m2Result == null) {
-                            return 1;
-                        }
-
-                        if (Integer.TYPE.equals(returnType) || Integer.class.equals(returnType)) {
-                            ret = ((Integer) m1Result).compareTo((Integer) m2Result);
-                        } else if (Long.TYPE.equals(returnType) || Long.class.equals(returnType)) {
-                            ret = ((Long) m1Result).compareTo((Long) m2Result);
-                        } else if (Float.TYPE.equals(returnType) || Float.class.equals(returnType)) {
-                            ret = ((Float) m1Result).compareTo((Float) m2Result);
-                        } else if (Double.TYPE.equals(returnType) || Double.class.equals(returnType)) {
-                            ret = ((Double) m1Result).compareTo((Double) m2Result);
-                        } else if (Boolean.TYPE.equals(returnType) || Boolean.class.equals(returnType)) {
-                            ret = ((Boolean) m1Result).compareTo((Boolean) m2Result);
-                        } else if (BigDecimal.class.equals(returnType)) {
-                            ret = ((BigDecimal) m1Result).compareTo((BigDecimal) m2Result);
-                        } else {
-                            ret = m1Result.toString().compareTo(m2Result.toString());
-                        }
-                    } else if (sortDirection == SortDirection.DESC) {
-                        //如果有结果为null的，直接返回
-                        if (m1Result == null && m2Result == null) {
-                            return 0;
-                        } else if (m1Result == null) {
-                            return 1;
-                        } else if (m2Result == null) {
-                            return -1;
-                        }
-
-                        if (Integer.TYPE.equals(returnType) || Integer.class.equals(returnType)) {
-                            ret = ((Integer) m2Result).compareTo((Integer) m1Result);
-                        } else if (Long.TYPE.equals(returnType) || Long.class.equals(returnType)) {
-                            ret = ((Long) m2Result).compareTo((Long) m1Result);
-                        } else if (Float.TYPE.equals(returnType) || Float.class.equals(returnType)) {
-                            ret = ((Float) m2Result).compareTo((Float) m1Result);
-                        } else if (Double.TYPE.equals(returnType) || Double.class.equals(returnType)) {
-                            ret = ((Double) m2Result).compareTo((Double) m1Result);
-                        } else if (Boolean.TYPE.equals(returnType) || Boolean.class.equals(returnType)) {
-                            ret = ((Boolean) m2Result).compareTo((Boolean) m1Result);
-                        } else if (BigDecimal.class.equals(returnType)) {
-                            ret = ((BigDecimal) m2Result).compareTo((BigDecimal) m1Result);
-                        } else {
-                            ret = m2Result.toString().compareTo(m1Result.toString());
-                        }
+                    if (sortDirection == SortDirection.DESC) {
+                        Object tmp = m1Result;
+                        m1Result = m2Result;
+                        m2Result = tmp;
                     }
+
+                    if (m1Result == null && m2Result == null) {
+                        return 0;
+                    } else if (m1Result == null) {
+                        return -1;
+                    } else if (m2Result == null) {
+                        return 1;
+                    }
+                    ret = typeCompare(returnType, m1Result, m2Result);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
