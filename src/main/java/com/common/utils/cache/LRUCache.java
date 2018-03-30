@@ -28,11 +28,12 @@ public class LRUCache<K, V> {
             private static final long serialVersionUID = -6265505777659103537L;
 
             protected boolean removeEldestEntry(Map.Entry<K, V> eldest) {
-                return this.size() > LRUCache.this.cacheSize;
+                return usedEntries() > LRUCache.this.cacheSize;
             }
         };
     }
 
+    // TODO: 30/03/2018  synchronized -> ReentrantLock
     public synchronized V get(K key) {
         return this.map.get(key);
     }
