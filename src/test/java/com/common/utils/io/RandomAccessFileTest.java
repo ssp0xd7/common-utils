@@ -3,57 +3,32 @@ package com.common.utils.io;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.lang3.StringUtils;
+import java.util.concurrent.atomic.AtomicLong;
+import org.junit.Test;
+import com.common.utils.TestBase;
 
 /**
- * 多线程读文件
- *
- * @author kevin(ssp0xd7 @ gmail.com) 01/03/2018
+ * @author kevin(ssp0xd7 @ gmail.com) 11/04/2018
  */
-public abstract class FileMultiParse {
+public class RandomAccessFileTest extends TestBase {
 
     private ExecutorService threads = new ThreadPoolExecutor(
-            20, 30, 0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(50));
+            20, 30, 0L,
+            TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(50));
 
     private final int THREAD_NUM = 10;
 
     private final char end_separator = '\n';
 
-    private String charSet = "GBK";
+    private AtomicLong count = new AtomicLong(0);
 
-    /**
-     * 文件解析
-     * <p>
-     * 一行数据解析为一个对象
-     * <p>
-     * 对象属性仅支持基本类型(时间格式待定)
-     * <p>
-     * 多线程读，多线程消费
-     *
-     * @param clazz
-     *            解析后的对象
-     * @return
-     * @throws Exception
-     */
-    public <T> List<T> parse(final File file, final Class<T> clazz, String charSet,
-        HashMap<String, Integer> nameIndexMap) throws Exception {
-        if (StringUtils.isNotBlank(charSet)) {
-            this.charSet = charSet;
-        }
-        if (nameIndexMap == null) {
-            return Collections.emptyList();
-        }
+    public void parse(final File file) throws Exception {
         RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
         long totalLength = randomAccessFile.length();
 
@@ -74,7 +49,6 @@ public abstract class FileMultiParse {
             checkIndex += gapToEof;
             endIndexs[n] = checkIndex;
         }
-        final List<T> result = Collections.synchronizedList(new ArrayList<T>());
         final CountDownLatch latch = new CountDownLatch(THREAD_NUM);
         for (int n = 0; n < THREAD_NUM; n++) {
             final int finalN = n;
@@ -82,7 +56,7 @@ public abstract class FileMultiParse {
                 @Override
                 public void run() {
                     try {
-                        result.addAll(readDatas(beginIndexs[finalN], endIndexs[finalN], file, clazz));
+                        readDatas(beginIndexs[finalN], endIndexs[finalN], file);
                         latch.countDown();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -92,7 +66,6 @@ public abstract class FileMultiParse {
         }
         latch.await();
         randomAccessFile.close();
-        return result;
     }
 
     /**
@@ -112,34 +85,30 @@ public abstract class FileMultiParse {
         return ++count;
     }
 
-    private <T> List<T> readDatas(long begin, long end, File file, Class<T> clazz) throws Exception {
-        List<T> datas = new ArrayList<T>();
-
-        BufferedRandomAccessFile bufferedRandomAccessFile = new BufferedRandomAccessFile(file, "r");
-        bufferedRandomAccessFile.seek(begin);
+    private void readDatas(long begin, long end, File file) throws Exception {
+        RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");
+        randomAccessFile.seek(begin);
         StringBuffer sb = new StringBuffer();
         while (begin <= end) {
-            int read = bufferedRandomAccessFile.read();
+            int read = randomAccessFile.read();
             begin++;
             if (end_separator == read) {
-                String line = new String(sb.toString().getBytes("ISO-8859-1"), charSet);
-                datas.add(getObject(line, clazz));
+                // TODO: 11/04/2018  
                 sb = new StringBuffer();
+                count.incrementAndGet();
             } else {
                 sb.append((char) read);
             }
         }
-        bufferedRandomAccessFile.close();
-        return datas;
+        randomAccessFile.close();
     }
 
-    /**
-     * 反序列line成对象
-     * 
-     * @param line
-     * @param clazz
-     * @param <T>
-     * @return
-     */
-    abstract <T> T getObject(String line, Class<T> clazz);
+    @Test
+    public void test() throws Exception {
+        String filePath = "/Users/kevin/Temp/严选/201802/支付宝/20884212585612930156_201802_账务明细_2.csv";
+        long t1 = System.currentTimeMillis();
+        parse(new File(filePath));
+        System.out.println("Total count: " + count.get());
+        System.out.println("Total cost: " + (System.currentTimeMillis() - t1));
+    }
 }
